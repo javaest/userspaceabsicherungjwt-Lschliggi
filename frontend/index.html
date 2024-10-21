@@ -5,29 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plattformen und Kurse</title>
     <link rel="stylesheet" href="style.css">
-	<script>
+    <script>
         // Überprüfen, ob der Benutzer angemeldet ist
         window.onload = function() {
-            const username = localStorage.getItem('username');
-			console.log('Geladener Benutzername:', username); 
-            if (!username) {
-                // Benutzer ist nicht angemeldet, zurück zur Anmeldeseite leiten
-                window.location.href = 'login.html'; // Ändere den Dateinamen entsprechend deiner Struktur
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                // Wenn kein Token vorhanden ist, zur Login-Seite weiterleiten
+                window.location.href = 'login.html';
+                return;
             }
+
+            // Überprüfen, ob der Token gültig ist
+            fetch('http://localhost:8080/api/test/user', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    // Token ist gültig, Benutzer bleibt auf der Seite
+                    console.log('Benutzer ist authentifiziert');
+                } else {
+                    // Token ungültig, zur Login-Seite weiterleiten
+                    window.location.href = 'login.html';
+                }
+            })
+            .catch(error => {
+                // Im Fehlerfall ebenfalls zur Login-Seite weiterleiten
+                console.error('Fehler bei der Authentifizierung:', error);
+                window.location.href = 'login.html';
+            });
         };
-	function logout() {
-		localStorage.removeItem('username'); // Entferne den Benutzernamen aus dem localStorage
-		window.location.href = 'login.html'; // Zur Anmeldeseite leiten
-	}
+
+        // Funktion zum Abmelden
+        function logout() {
+            localStorage.removeItem('accessToken'); // Entferne den Token aus dem localStorage
+            window.location.href = 'login.html'; // Zur Anmeldeseite weiterleiten
+        }
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Interner Bereich</h1>
-        <p>Wenn SIe das sehen, sind Sie hoffentlich dazu berechtigt =)</p>
-    </div>
-	<div class="container">
-		<button onclick="logout()">Abmelden</button>
-	</div>
+<div class="container">
+    <h1>Interner Bereich</h1>
+    <p>Wenn Sie das sehen, sind Sie hoffentlich dazu berechtigt =)</p>
+</div>
+<div class="container">
+    <button onclick="logout()">Abmelden</button>
+</div>
 </body>
 </html>
